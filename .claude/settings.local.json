@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./mvnw dependency:resolve -q)"
+      "Bash(./mvnw dependency:resolve -q)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://repo.maven.apache.org/maven2/com/slimjars/trove4j/trove4j-long-hash-set/1.0.1/trove4j-long-hash-set-1.0.1.jar\")",
+      "Bash(java -version)",
+      "Bash(javac -version)",
+      "Bash(./mvnw --version)",
+      "Bash(./mvnw compile *)",
+      "Bash(./mvnw dependency:tree)",
+      "Bash(jar tf *)",
+      "Bash(./mvnw dependency:resolve)",
+      "Bash(grep -E \"^org/springframework/batch/infrastructure/item/[^/]+\\\\.class$\")",
+      "Bash(grep -E \"^org/springframework/batch/core/[A-Z][^/]+\\\\.class$\")"
     ]
   }
 }

@@ -40,11 +40,7 @@ public class WeatherService {
             Map.entry(99, "Thunderstorm with heavy hail")
     );
 
-    private final RestClient restClient;
-
-    public WeatherService(RestClient.Builder builder) {
-        this.restClient = builder.baseUrl(BASE_URL).build();
-    }
+    private final RestClient restClient = RestClient.builder().baseUrl(BASE_URL).build();
 
     public WeatherResponse getWeather(double lat, double lon, int days) {
         OpenMeteoResponse raw = restClient.get()

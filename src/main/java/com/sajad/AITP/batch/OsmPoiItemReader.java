@@ -4,7 +4,8 @@ import com.sajad.AITP.model.OsmPoi;
 import de.topobyte.osm4j.core.access.OsmIterator;
 import de.topobyte.osm4j.core.model.iface.*;
 import de.topobyte.osm4j.pbf.seq.PbfIterator;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.batch.infrastructure.item.ItemStreamException;
 import org.springframework.batch.infrastructure.item.ItemStreamReader;
@@ -17,9 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-@Slf4j
 @Component
 public class OsmPoiItemReader implements ItemStreamReader<OsmPoi> {
+
+    private static final Logger log = LoggerFactory.getLogger(OsmPoiItemReader.class);
 
     private static final Set<String> POI_KEYS =
         Set.of("tourism", "historic", "amenity", "leisure", "natural", "shop", "sport", "man_made");
@@ -159,20 +161,47 @@ public class OsmPoiItemReader implements ItemStreamReader<OsmPoi> {
         return new double[]{sumLat / coords.size(), sumLon / coords.size()};
     }
 
-    // Returns a WKT polygon only for closed ways (ring) with at least 4 nodes.
+    // Returns a WKT polygon for closed OSM ways. Rings are explicitly closed in WKT even when
+    // the first/last node coords differ due to missing nodes in the PBF pass.
     private String buildPolygonWkt(OsmWay way, List<double[]> coords) {
-        if (coords.size() < 4) return null;
-        long firstId = way.getNodeId(0);
-        long lastId  = way.getNodeId(way.getNumberOfNodes() - 1);
-        if (firstId != lastId) return null; // open linestring, no boundary
+        List<double[]> ring = dedupeConsecutive(coords);
+        if (ring.size() < 3) return null;
+
+        boolean osmClosed = way.getNodeId(0) == way.getNodeId(way.getNumberOfNodes() - 1);
+        if (!ringClosed(ring)) {
+            if (!osmClosed) return null;
+            ring = new ArrayList<>(ring);
+            double[] first = ring.get(0);
+            ring.add(new double[]{first[0], first[1]});
+        }
+
+        if (ring.size() < 4) return null;
 
         StringBuilder sb = new StringBuilder("SRID=4326;POLYGON((");
-        for (int i = 0; i < coords.size(); i++) {
+        for (int i = 0; i < ring.size(); i++) {
             if (i > 0) sb.append(',');
-            sb.append(coords.get(i)[1]).append(' ').append(coords.get(i)[0]); // lon lat
+            sb.append(ring.get(i)[1]).append(' ').append(ring.get(i)[0]); // lon lat
         }
         sb.append("))");
         return sb.toString();
+    }
+
+    private List<double[]> dedupeConsecutive(List<double[]> coords) {
+        List<double[]> out = new ArrayList<>(coords.size());
+        for (double[] c : coords) {
+            if (out.isEmpty() || !coordsEqual(c, out.get(out.size() - 1))) {
+                out.add(c);
+            }
+        }
+        return out;
+    }
+
+    private boolean ringClosed(List<double[]> ring) {
+        return ring.size() >= 2 && coordsEqual(ring.get(0), ring.get(ring.size() - 1));
+    }
+
+    private boolean coordsEqual(double[] a, double[] b) {
+        return Math.abs(a[0] - b[0]) < 1e-7 && Math.abs(a[1] - b[1]) < 1e-7;
     }
 
     private double[] relationCentroid(OsmRelation rel, Map<Long, double[]> nodeCoords) {

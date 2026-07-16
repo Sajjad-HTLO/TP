@@ -35,18 +35,37 @@ public class PoiRepository {
                ST_Distance(p.location, ref.pt) / 1000.0 AS distance_km
         FROM poi p, ref
         WHERE ST_DWithin(p.location, ref.pt, ?)
-          AND (? IS NULL OR p.category = ?)
+            ORDER BY distance_km
+            LIMIT ? OFFSET ?
+            """;
+
+    private static final String NEARBY_CATEGORY_SQL = """
+            WITH ref AS (SELECT ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography AS pt)
+            SELECT p.id, p.osm_id, p.osm_type, p.name_tr, p.name_en,
+                   p.category, p.subcategory,
+                   ST_Y(p.location::geometry) AS lat,
+                   ST_X(p.location::geometry) AS lon,
+                   p.completeness_score,
+                   p.attributes::text        AS attributes_json,
+                   ST_Distance(p.location, ref.pt) / 1000.0 AS distance_km
+            FROM poi p, ref
+            WHERE ST_DWithin(p.location, ref.pt, ?)
+              AND p.category = ?
         ORDER BY distance_km
         LIMIT ? OFFSET ?
         """;
 
     public List<PoiResponse> findNearby(double lat, double lon, double radiusKm,
                                         String category, int page, int size) {
-        return jdbc.query(NEARBY_SQL, poiRowMapper(),
-            lon, lat,                    // ST_MakePoint(lon, lat)
-            radiusKm * 1000,             // radius in metres
-            category, category,          // nullable category filter
-            size, (long) page * size);
+        double radiusM = radiusKm * 1000;
+        long offset = (long) page * size;
+
+        if (category == null || category.isBlank()) {
+            return jdbc.query(NEARBY_SQL, poiRowMapper(),
+                    lon, lat, radiusM, size, offset);
+        }
+        return jdbc.query(NEARBY_CATEGORY_SQL, poiRowMapper(),
+                lon, lat, radiusM, category, size, offset);
     }
 
     // ── By ID ───────────────────────────────────────────────────────────────

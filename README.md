@@ -1,4 +1,4 @@
-# AITP — AI Travel Planner (Turkey)
+# Orenda — AI Travel Planner (Turkey)
 
 A backend "Travel Operating System" for Turkey, built with Spring Boot 4. It ingests OpenStreetMap POI data, exposes a
 spatial search API, and integrates free third-party services for weather and routing.
@@ -38,6 +38,12 @@ spatial search API, and integrates free third-party services for weather and rou
 ---
 
 ## Running
+
+docker start aitp-pg
+
+docker exec aitp-pg psql -U postgres -d aitp -c "SELECT COUNT(*) AS total_pois, COUNT(*) FILTER (WHERE 'wikipedia' =
+ANY(data_sources)) AS wikipedia_enriched, COUNT(*) FILTER (WHERE 'wikipedia' != ALL(data_sources)) AS not_yet_enriched
+FROM poi;"
 
 ```bash
 # Build

@@ -13,11 +13,7 @@ public class RoutingService {
     private static final String OSRM_BASE = "http://router.project-osrm.org";
     private static final Set<String> VALID_PROFILES = Set.of("driving", "foot", "bike");
 
-    private final RestClient restClient;
-
-    public RoutingService(RestClient.Builder builder) {
-        this.restClient = builder.baseUrl(OSRM_BASE).build();
-    }
+    private final RestClient restClient = RestClient.builder().baseUrl(OSRM_BASE).build();
 
     /**
      * Returns the fastest route between two points via OSRM public demo server.
@@ -39,6 +35,7 @@ public class RoutingService {
                         .queryParam("geometries", "geojson")
                         .queryParam("steps", "false")
                         .build(safeProfile, coordinates))
+                .header("Accept-Encoding", "identity")
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     throw new ResponseStatusException(res.getStatusCode(),

@@ -90,6 +90,15 @@ public class CategoryMapper {
     private static final List<String> PRIORITY_KEYS =
         List.of("tourism", "amenity", "historic", "leisure", "natural", "shop", "sport");
 
+    /**
+     * OSM multi-values use ';' — keep the first token for indexed subcategory. Full tag stays in attributes JSONB.
+     */
+    static String normalizeSubcategory(String value) {
+        if (value == null || value.isBlank()) return value;
+        int sep = value.indexOf(';');
+        return sep >= 0 ? value.substring(0, sep).trim() : value.trim();
+    }
+
     public String[] map(Map<String, String> tags) {
         String v;
         if ((v = tags.get("tourism"))  != null && TOURISM.containsKey(v))  return TOURISM.get(v);
@@ -101,7 +110,7 @@ public class CategoryMapper {
         // Fallback: return raw key=value as category/subcategory
         for (String key : PRIORITY_KEYS) {
             v = tags.get(key);
-            if (v != null) return new String[]{key, v};
+            if (v != null) return new String[]{key, normalizeSubcategory(v)};
         }
         return new String[]{"other", "other"};
     }

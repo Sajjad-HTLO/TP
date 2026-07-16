@@ -11,7 +11,26 @@
       "Bash(jar tf *)",
       "Bash(./mvnw dependency:resolve)",
       "Bash(grep -E \"^org/springframework/batch/infrastructure/item/[^/]+\\\\.class$\")",
-      "Bash(grep -E \"^org/springframework/batch/core/[A-Z][^/]+\\\\.class$\")"
+      "Bash(grep -E \"^org/springframework/batch/core/[A-Z][^/]+\\\\.class$\")",
+      "Bash(xargs cat -n)",
+      "Bash(./mvnw dependency:tree -Dincludes=org.springframework:spring-web)",
+      "Skill(run)",
+      "Bash(pg_isready -h localhost -p 5432)",
+      "Bash(psql -h localhost -U postgres -c '\\\\l')",
+      "Bash(docker run *)",
+      "Bash(docker exec *)",
+      "Bash(./mvnw clean *)",
+      "Bash(./mvnw spring-boot:run)",
+      "Bash(echo \"PID=$!\")",
+      "Read(//tmp/**)",
+      "Bash(curl -s \"http://localhost:8080/api/pois/categories\")",
+      "Bash(curl -s \"http://localhost:8080/api/weather?lat=41.0&lon=28.9&days=3\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s \"http://localhost:8080/api/route?fromLat=41.0&fromLon=28.9&toLat=39.9&toLon=32.8&profile=driving\")",
+      "Bash(curl -s -I \"http://router.project-osrm.org/route/v1/driving/28.9,41.0;32.8,39.9?overview=full&geometries=geojson&steps=false\")",
+      "Bash(pkill -f \"spring-boot:run\")",
+      "Bash(pkill -f \"AitpApplication\")",
+      "Bash(grep -v \"^\\\\[INFO\\\\]\\\\|^$\\\\|^  \\\\.\" /tmp/aitp-run3.log)"
     ]
   }
 }

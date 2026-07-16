@@ -10,7 +10,7 @@
 	</parent>
 
 	<groupId>com.sajad</groupId>
-	<artifactId>AITP</artifactId>
+    <artifactId>Orenda</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>
@@ -73,7 +73,13 @@
 			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
 
-		<!-- ── OSM parsing ─────────────────────────────────────────────── -->
+        <!-- Spring Boot 4 extracted Flyway auto-configuration into its own module -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-flyway</artifactId>
+        </dependency>
+
+        <!-- ── OSM parsing ─────────────────────────────────────────────── -->
 		<dependency>
 			<groupId>de.topobyte</groupId>
 			<artifactId>osm4j-core</artifactId>
@@ -116,6 +122,19 @@
 
 	<build>
 		<plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <!-- Required on clean builds with JDK 21+ so Lombok generates builders/getters -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

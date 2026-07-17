@@ -45,6 +45,11 @@ docker exec aitp-pg psql -U postgres -d aitp -c "SELECT COUNT(*) AS total_pois, 
 ANY(data_sources)) AS wikipedia_enriched, COUNT(*) FILTER (WHERE 'wikipedia' != ALL(data_sources)) AS not_yet_enriched
 FROM poi;"
 
+## Dump db :
+
+docker exec -t aitp-pg pg_dump -U postgres -d aitp -Fc -f /tmp/db_dump.dump
+docker cp aitp-pg:/tmp/db_dump.dump ./db_dump.dump
+
 ```bash
 # Build
 ./mvnw clean package
